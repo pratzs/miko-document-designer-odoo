@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+      No conditional `invisible` or `attrs` anywhere in this file on purpose.
+      Odoo 17 replaced `attrs="{'invisible': [...]}"` with a plain expression,
+      so any field hidden on a condition would need two spellings and a build
+      transform to switch between them. Static attributes behave identically on
+      every series, so the screen shows every field and needs no dialect.
+    -->
+
+    <record id="view_miko_document_designer" model="ir.ui.view">
+        <field name="name">miko.document.designer.form</field>
+        <field name="model">miko.document.designer</field>
+        <field name="arch" type="xml">
+            <form class="o_document_layout" string="Document Designer">
+                <sheet>
+                    <field name="company_id" invisible="1"/>
+                    <field name="external_report_layout_id" invisible="1"/>
+                    <field name="logo_primary_color" invisible="1"/>
+                    <field name="logo_secondary_color" invisible="1"/>
+                    <!--
+                      Settings on the left, the live preview on the right, and
+                      every group in the notebook rather than stacked above it.
+                      The first version put the brand fields in a group ABOVE the
+                      notebook, which pushed our own settings below the fold of
+                      the dialog: a merchant had to scroll to find the thing they
+                      installed the module for. Found by screenshotting the real
+                      screen, not by reading the arch.
+                    -->
+                    <div class="row">
+                      <div class="col-lg-7">
+                        <notebook>
+                            <page string="Brand" name="brand">
+                                <group class="o_document_layout_company">
+                                    <field name="report_layout_id" widget="radio"
+                                           string="Layout" required="1"/>
+                                    <field name="font" widget="selection" required="1"/>
+                                    <field name="logo" widget="image"
+                                           options="{'size': [0, 50]}"/>
+                                    <label for="primary_color" string="Colours"/>
+                                    <div class="o_document_layout_colors d-flex align-items-end mb-4">
+                                        <field name="primary_color" widget="color"
+                                               class="w-auto m-0 me-1"/>
+                                        <field name="secondary_color" widget="color"
+                                               class="w-auto m-0"/>
+                                    </div>
+                                    <field name="company_details" string="Address"/>
+                                    <field name="report_header" string="Tagline"
+                                           placeholder="e.g. Global Business Solutions"/>
+                                    <field name="report_footer" string="Footer"
+                                           placeholder="Write your phone, email, bank account, tax ID, ..."/>
+                                    <field name="layout_background" widget="selection"/>
+                                    <field name="layout_background_image"
+                                           options="{'accepted_file_extensions': 'image/*'}"/>
+                                    <field name="paperformat_id" widget="selection"
+                                           domain="[('report_ids', '=', False)]"/>
+                                </group>
+                            </page>
+
+                            <page string="Lines" name="lines">
+                                <group string="Text">
+                                    <field name="miko_base_font_size"/>
+                                    <field name="miko_table_font_size"/>
+                                    <field name="miko_line_height"/>
+                                </group>
+                                <group string="Line table">
+                                    <field name="miko_density"/>
+                                    <field name="miko_grid"/>
+                                    <field name="miko_zebra"/>
+                                    <field name="miko_zebra_color" widget="color"/>
+                                    <field name="miko_row_numbers"/>
+                                    <field name="miko_head_bg" widget="color"/>
+                                    <field name="miko_head_color" widget="color"/>
+                                </group>
+                                <group string="Product lines">
+                                    <field name="miko_line_images"/>
+                                    <field name="miko_line_image_size"/>
+                                </group>
+                            </page>
+
+                            <page string="Stamp &amp; paper" name="paper">
+                                <group string="Watermark">
+                                    <field name="miko_watermark_type"/>
+                                    <field name="miko_watermark_text"
+                                           placeholder="e.g. DRAFT"/>
+                                    <field name="miko_watermark_image" widget="image"
+                                           options="{'size': [0, 80]}"/>
+                                    <field name="miko_watermark_opacity"/>
+                                    <field name="miko_watermark_angle"/>
+                                    <field name="miko_watermark_size"/>
+                                </group>
+                                <group string="Paper">
+                                    <field name="miko_letterhead_pdf"
+                                           filename="miko_letterhead_pdf_name"/>
+                                    <field name="miko_letterhead_pdf_name" invisible="1"/>
+                                    <field name="miko_append_pdf"
+                                           filename="miko_append_pdf_name"/>
+                                    <field name="miko_append_pdf_name" invisible="1"/>
+                                </group>
+                                <div class="text-muted">
+                                    The watermark, the letterhead and the appended
+                                    pages are added when the PDF is produced, so the
+                                    preview beside this screen will not show them.
+                                    Use Print sample to see the real thing.
+                                </div>
+                            </page>
+
+                            <page string="Totals" name="totals">
+                                <group>
+                                    <field name="miko_amount_words"/>
+                                    <field name="miko_bank_block"/>
+                                    <field name="miko_bank_title"/>
+                                </group>
+                            </page>
+
+                            <page string="Off switch" name="off">
+                                <group>
+                                    <field name="miko_design_active"/>
+                                </group>
+                                <div class="text-muted">
+                                    Turning this off prints exactly as stock Odoo
+                                    would, without losing a single setting above.
+                                </div>
+                            </page>
+                        </notebook>
+                      </div>
+                      <div class="col-lg-5 o_preview">
+                        <field name="preview" widget="iframe_wrapper"
+                               class="preview_document_layout d-flex justify-content-center mb-0"/>
+                      </div>
+                    </div>
+                </sheet>
+                <footer>
+                    <button string="Save" class="btn-primary" type="object"
+                            name="document_layout_save" data-hotkey="q"/>
+                    <button string="Print sample" type="object"
+                            name="action_miko_print_sample" class="btn-secondary"/>
+                    <button special="cancel" data-hotkey="x" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_miko_document_designer" model="ir.actions.act_window">
+        <field name="name">Document Designer</field>
+        <field name="res_model">miko.document.designer</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_miko_document_designer"/>
+        <field name="context">{"dialog_size": "extra-large"}</field>
+    </record>
+
+    <!-- Rules -->
+
+    <record id="view_miko_document_rule_list" model="ir.ui.view">
+        <field name="name">miko.document.rule.list</field>
+        <field name="model">miko.document.rule</field>
+        <field name="arch" type="xml">
+            <list string="Document rules">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="report_ids" widget="many2many_tags"/>
+                <field name="partner_ids" widget="many2many_tags"/>
+                <field name="watermark_type"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_miko_document_rule_form" model="ir.ui.view">
+        <field name="name">miko.document.rule.form</field>
+        <field name="model">miko.document.rule</field>
+        <field name="arch" type="xml">
+            <form string="Document rule">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Draft stamp on quotations"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                            <field name="sequence"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="report_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="partner_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Lines" name="lines">
+                            <group>
+                                <group string="Text">
+                                    <field name="base_font_size"/>
+                                    <field name="table_font_size"/>
+                                    <field name="line_height"/>
+                                </group>
+                                <group string="Line table">
+                                    <field name="density"/>
+                                    <field name="grid"/>
+                                    <field name="zebra"/>
+                                    <field name="zebra_color" widget="color"/>
+                                    <field name="row_numbers"/>
+                                    <field name="head_bg" widget="color"/>
+                                    <field name="head_color" widget="color"/>
+                                    <field name="line_images"/>
+                                    <field name="line_image_size"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Stamp &amp; paper" name="paper">
+                            <group>
+                                <group string="Watermark">
+                                    <field name="watermark_type"/>
+                                    <field name="watermark_text"/>
+                                    <field name="watermark_image" widget="image"
+                                           options="{'size': [0, 80]}"/>
+                                    <field name="watermark_opacity"/>
+                                    <field name="watermark_angle"/>
+                                    <field name="watermark_size"/>
+                                </group>
+                                <group string="Paper">
+                                    <field name="external_report_layout_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="letterhead_pdf"
+                                           filename="letterhead_pdf_name"/>
+                                    <field name="letterhead_pdf_name" invisible="1"/>
+                                    <field name="no_letterhead"/>
+                                    <field name="append_pdf" filename="append_pdf_name"/>
+                                    <field name="append_pdf_name" invisible="1"/>
+                                    <field name="no_append"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Totals" name="totals">
+                            <group>
+                                <field name="amount_words"/>
+                                <field name="bank_block"/>
+                                <field name="bank_title"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_miko_document_rule" model="ir.actions.act_window">
+        <field name="name">Document rules</field>
+        <field name="res_model">miko.document.rule</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Print one customer, or one
+                document, differently from the rest</p>
+            <p>A rule carries only what it changes. Anything left on "Company
+                default" keeps following the design.</p>
+        </field>
+    </record>
+
+    <!-- Menus -->
+
+    <menuitem id="menu_miko_document_root"
+              name="Document Designer"
+              web_icon="miko_document_designer,static/description/icon.png"
+              groups="group_miko_document_manager"
+              sequence="95"/>
+
+    <menuitem id="menu_miko_document_design"
+              name="Design"
+              parent="menu_miko_document_root"
+              action="action_miko_document_designer"
+              sequence="10"/>
+
+    <menuitem id="menu_miko_document_rules"
+              name="Rules"
+              parent="menu_miko_document_root"
+              action="action_miko_document_rule"
+              sequence="20"/>
+
+</odoo>
