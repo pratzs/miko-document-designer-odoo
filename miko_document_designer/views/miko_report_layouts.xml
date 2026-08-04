@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+      Two layouts of our own, written against the oldest API we support so one
+      source serves 16 through 19: no `layout_document_title`, no
+      `is_html_empty`, no `display_name_in_footer` - all of those arrived later
+      or are not in scope on every series, and a missing name in a QWeb
+      expression is a rendering error on the merchant's invoice, not a warning.
+
+      Both carry `o_company_#{company.id}_layout` on the header, the article and
+      the footer, because that is the class the designed stylesheet is scoped to,
+      and the article carries data-oe-model/id/lang, without which core refuses
+      to save the report as an attachment.
+    -->
+
+    <template id="external_layout_miko_clean" name="Miko Clean">
+        <div t-attf-class="header o_company_#{company.id}_layout">
+            <div class="row">
+                <div class="col-6">
+                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)"
+                         style="max-height: 48px;" alt="Logo"/>
+                </div>
+                <div class="col-6 text-end" style="padding-top: 12px;">
+                    <span t-field="company.report_header" class="o_company_tagline"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div style="border-bottom: 2px solid #cfcfcf; margin-top: 8px;"/>
+                </div>
+            </div>
+        </div>
+
+        <div t-attf-class="article o_report_layout_standard o_company_#{company.id}_layout"
+             t-att-data-oe-model="o and o._name"
+             t-att-data-oe-id="o and o.id"
+             t-att-data-oe-lang="o and o.env.context.get('lang')">
+            <div class="row" style="margin-top: 24px;">
+                <div class="col-6" name="company_address">
+                    <ul class="list-unstyled mb-0">
+                        <li t-if="company.is_company_details_empty">
+                            <t t-out="company.partner_id"
+                               t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'/>
+                        </li>
+                        <li t-else="">
+                            <span t-field="company.company_details"/>
+                        </li>
+                        <li t-if="forced_vat">
+                            <t t-out="company.country_id.vat_label or 'Tax ID'"/>:
+                            <span t-out="forced_vat"/>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <t t-call="web.address_layout"/>
+            <t t-out="0"/>
+        </div>
+
+        <div t-attf-class="footer o_company_#{company.id}_layout">
+            <div class="text-center" style="border-top: 1px solid #cfcfcf; padding-top: 4px;">
+                <div t-field="company.report_footer"/>
+                <div t-if="report_type == 'pdf'" class="text-muted">
+                    <span class="page"/> / <span class="topage"/>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="external_layout_miko_letterhead" name="Miko Letterhead">
+        <!--
+          For stationery: pre-printed paper, or the letterhead PDF this module
+          prints behind every page. It deliberately draws no logo and no company
+          block of its own, because on letterhead both are already on the sheet
+          and printing them twice is the mistake this layout exists to avoid.
+          The header is an empty spacer that reserves the top band.
+        -->
+        <div t-attf-class="header o_company_#{company.id}_layout">
+            <div style="height: 12px;"/>
+        </div>
+
+        <div t-attf-class="article o_report_layout_standard o_company_#{company.id}_layout"
+             t-att-data-oe-model="o and o._name"
+             t-att-data-oe-id="o and o.id"
+             t-att-data-oe-lang="o and o.env.context.get('lang')">
+            <t t-call="web.address_layout"/>
+            <t t-out="0"/>
+        </div>
+
+        <div t-attf-class="footer o_company_#{company.id}_layout">
+            <div class="text-center text-muted">
+                <span t-if="report_type == 'pdf'" class="page"/>
+                <span t-if="report_type == 'pdf'"> / </span>
+                <span t-if="report_type == 'pdf'" class="topage"/>
+            </div>
+        </div>
+    </template>
+
+    <record id="miko_report_layout_clean" model="report.layout">
+        <field name="name">Miko Clean</field>
+        <field name="sequence">60</field>
+        <field name="view_id" ref="external_layout_miko_clean"/>
+        <field name="image">/miko_document_designer/static/img/layout_clean.png</field>
+    </record>
+
+    <record id="miko_report_layout_letterhead" model="report.layout">
+        <field name="name">Miko Letterhead</field>
+        <field name="sequence">61</field>
+        <field name="view_id" ref="external_layout_miko_letterhead"/>
+        <field name="image">/miko_document_designer/static/img/layout_letterhead.png</field>
+    </record>
+
+</odoo>

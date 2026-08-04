@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+          No category on the group on purpose. Odoo 19 replaced
+          `res.groups.category_id` with `privilege_id` pointing at a new
+          `res.groups.privilege` model, so naming either one takes the module
+          down on half the series we support. The field is cosmetic - it only
+          decides which box of the user form the checkbox appears in - and the
+          group works identically without it.
+        -->
+        <record id="group_miko_document_manager" model="res.groups">
+            <field name="name">Design printed documents</field>
+            <field name="comment">Can change the look of every printed document
+                for the whole company. Reading the design is granted to every
+                internal user, because every report rendered for them has to be
+                able to read it.</field>
+        </record>
+
+        <record id="base.group_system" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('group_miko_document_manager'))]"/>
+        </record>
+
+        <record id="miko_document_rule_company_rule" model="ir.rule">
+            <field name="name">Document rules: own company</field>
+            <field name="model_id" ref="model_miko_document_rule"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+    </data>
+</odoo>
