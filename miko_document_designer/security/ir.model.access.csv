@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_miko_document_designer_manager,miko.document.designer manager,model_miko_document_designer,group_miko_document_manager,1,1,1,1
+access_miko_document_rule_user,miko.document.rule user,model_miko_document_rule,base.group_user,1,0,0,0
+access_miko_document_rule_manager,miko.document.rule manager,model_miko_document_rule,group_miko_document_manager,1,1,1,1
