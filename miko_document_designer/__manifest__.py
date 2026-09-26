@@ -23,7 +23,7 @@ leaves your branding exactly as you set it.
 Rules let one customer, or one document type, print differently from the rest.
 """,
     'author': 'Tripster Developers',
-    'website': 'https://tripsterdevelopers.com/odoo/',
+    'website': 'https://miko.co.nz/odoo/document-designer',
     'category': 'Accounting',
     'license': 'OPL-1',
     # Nothing but the web client, on purpose. An invoice designer that pulls in
